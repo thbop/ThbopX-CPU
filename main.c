@@ -54,6 +54,24 @@ void execute(u8 ins) {
         case INS_MOV_IM_A: {
             reg.A = *fetch_bytes(1);
         } break;
+        case INS_MOV_IM_X: {
+            reg.X = *fetch_bytes(1);
+        } break;
+        case INS_MOV_IM_Y: {
+            reg.Y = *fetch_bytes(1);
+        } break;
+        case INS_MOV_M_A: {
+            reg.A = memory[*fetch_bytes(1)];
+        } break;
+        case INS_MOV_MX_A: {
+            reg.A = memory[*fetch_bytes(1)+reg.X];
+        } break;
+        case INS_MOV_MY_A: {
+            reg.A = memory[ memory[*fetch_bytes(1)]+reg.Y ];
+        } break;
+        case INS_MOV_MXY_A: {
+            reg.A = memory[ memory[*fetch_bytes(1)+reg.X]+reg.Y ];
+        } break;
             
     }
     printf("$%x\n", reg.A);
