@@ -6,8 +6,8 @@
 typedef unsigned char u8;
 
 enum instructions {
-    INS_BRK       = 0x00, // Mov
-    INS_MOV_IM_A  = 0x01,
+    INS_BRK       = 0x00,
+    INS_MOV_IM_A  = 0x01, // Mov
     INS_MOV_IM_X  = 0x02,
     INS_MOV_IM_Y  = 0x03,
     INS_MOV_M_A   = 0x04,
@@ -23,7 +23,7 @@ enum instructions {
     INS_MOV_A_MY  = 0x0E, // ST A -> Ptr+Y  -> Addr  
     INS_MOV_A_MXY = 0x0F, // ST A -> Ptr+Y  -> Addr+x
                           // Increments
-                          
+
                           // Stack operations
 
                           // Control flow
