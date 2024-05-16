@@ -87,6 +87,15 @@ void execute(u8 ins) {
         case INS_MOV_Y_M: {
             memory[*fetch_bytes(1)] = reg.Y;
         } break;
+        case INS_MOV_A_MX: {
+            memory[*fetch_bytes(1)+reg.X] = reg.A;
+        } break;
+        case INS_MOV_A_MY: {
+            memory[ memory[*fetch_bytes(1)]+reg.Y ] = reg.A;
+        } break;
+        case INS_MOV_A_MXY: {
+            memory[ memory[*fetch_bytes(1)+reg.X]+reg.Y ] = reg.A;
+        } break;
             
     }
 }
