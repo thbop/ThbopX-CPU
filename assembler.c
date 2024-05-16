@@ -6,15 +6,23 @@
 
 typedef unsigned int u32;
 
+typedef struct commaarg {
+    char a[4], b[4];
+} commaarg;
+
 typedef struct insinfo { // Use this info to determine opcode
     u8 argc;
-    char args[3][8]; // ins arg1 arg2
+    commaarg args[3]; // ins arg1 arg2
     // "$70", "rX"  = $70,rX
     // "$70", "sXY" = $70,sXY
 } insinfo;
 
 void print_insinfo( insinfo ins ) {
-    printf("C: %d INS: %s ARG1: %s ARG2: %s\n", ins.argc, ins.args[0], ins.args[1], ins.args[2]);
+    printf("C: %d INS: %s 1a: %s 1b: %s 2a: %s 2b: %s\n", ins.argc, ins.args[0].a, ins.args[1].a, ins.args[1].b, ins.args[2].a, ins.args[2].b);
+}
+
+void print_error( char* ins, char* reason ) {
+    printf( "ERROR: Failure processing %s instruction! %s\n", ins, reason );
 }
 
 u8 str_compare( char* a, char* b ) {
@@ -57,6 +65,22 @@ u32 separate_by_char( char* buffer, char chr, int arg ) {
     return x;
 }
 
+int find_w_lim( char* buffer, char chr, u32 lim ) {
+    int x = 0;
+    while ( buffer[x++] != chr && x < lim );
+    if ( x == lim ) return -1;
+    return --x;
+}
+
+void mov( insinfo ins ) {
+    u8 opcode = 0x01;
+    if      ( ins.args[1].a[0] == '#' ); // IM
+    else if ( ins.args[1].a[0] == '$' ) {
+
+    }
+    else print_error( "mov", "Incorrect formatting!" );
+}
+
 
 int main() {
     srcptr  = fopen( "main.s",   "r"  );
@@ -67,7 +91,7 @@ int main() {
         insert_end_space(buffer);
         u32 argc = count_char( buffer, ' ' );
         u32 arga, argb = 0;
-        insinfo ins;
+        insinfo ins = { 0, (commaarg){"",""}, (commaarg){"",""} };
         u8 found_comment = 0;
         for ( u32 i = 0; i < argc; i++ ) {
             arga = argb;
@@ -76,15 +100,22 @@ int main() {
             if ( !found_comment ) {
                 if ( buffer[arga] == ';' ) {found_comment = 1;}
                 else {
-                    for ( u32 d = arga; d < argb; d++ ) if ( !(d-arga >= 3 || buffer[d] == ' ') ) ins.args[i][d-arga] = buffer[d];
+                    for ( u32 d = arga; d < argb; d++ ) if ( !(d-arga >= 7 || buffer[d] == ' ') ) {
+                        if ( argb-arga <= 4 ) {
+                            ins.args[i].a[d-arga] = buffer[d];
+                            ins.args[i].b[d-arga] = 0;
+                        } else {
+                            int commaloc = find_w_lim( buffer+arga, ',', argb-arga ); // bad, ik but idc
+                            if      ( d-arga < commaloc ) ins.args[i].a[d-arga]            = buffer[d];
+                            else if ( d-arga > commaloc ) ins.args[i].b[d-arga-commaloc-1] = buffer[d];
+                        }
+                    }
                     ins.argc++;
                 }
             }
         }
-
-        if ( str_compare( "mov", ins.args[0] ) ) {
-            printf("hi\n");
-        }
+        print_insinfo( ins );
+        // if ( str_compare( "mov", ins.args[0].a ) ) mov( ins );
 
     }
 
