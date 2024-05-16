@@ -22,9 +22,12 @@ enum instructions {
     INS_MOV_A_MX  = 0x0D, // ST A           -> Addr+X          
     INS_MOV_A_MY  = 0x0E, // ST A -> Ptr+Y  -> Addr  
     INS_MOV_A_MXY = 0x0F, // ST A -> Ptr+Y  -> Addr+x
+                          // Increments
+                          
                           // Stack operations
 
                           // Control flow
+
 };
 
 struct {
