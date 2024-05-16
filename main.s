@@ -1,0 +1,1 @@
+mov A $70 ; Cheese
