@@ -1,3 +1,5 @@
-mov rA #35 ; Cheese
-mov $70 rX ; hmm
-mov $10,rX A
+mov #35 rA
+mov #41 rX
+brk
+; mov rA $70 ; hmm
+; mov $10,rX rA

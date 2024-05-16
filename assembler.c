@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "include/cpu.h"
 
 #define BUFFERSIZE 256
@@ -32,6 +33,10 @@ u8 str_compare( char* a, char* b ) {
         if ( a[i] != b[i] ) equal = 0;
     }
     return equal;
+}
+
+u8 atoh( char* a ) {
+    return (u8)strtol(a, NULL, 16);
 }
 
 FILE* srcptr, *destptr;
@@ -72,9 +77,17 @@ int find_w_lim( char* buffer, char chr, u32 lim ) {
     return --x;
 }
 
+u8 axy( char arg ) {
+    switch (arg) {
+        case 'A': return 0;
+        case 'X': return 1;
+        case 'Y': return 2;
+    }
+}
+
 void mov( insinfo ins ) {
-    u8 opcode = 0x01;
-    if      ( ins.args[1].a[0] == '#' ); // IM
+    u8 opcode = INS_MOV_IM_A, axyv;
+    if      ( ins.args[1].a[0] == '#' && ins.args[2].a[0] == 'r' ) { axyv = axy( ins.args[2].a[1] ); putbyte( opcode+axyv ); putbyte( atoh(ins.args[1].a+1) ); }
     else if ( ins.args[1].a[0] == '$' ) {
 
     }
@@ -114,11 +127,13 @@ int main() {
                 }
             }
         }
+        ins.args[0].a[3] = '\0';
         print_insinfo( ins );
-        // if ( str_compare( "mov", ins.args[0].a ) ) mov( ins );
+        if      ( str_compare( "brk", ins.args[0].a ) ) putbyte( INS_BRK );
+        else if ( str_compare( "mov", ins.args[0].a ) ) mov( ins );
 
     }
-
+    fputc(EOF, destptr);
     fclose(srcptr);
     fclose(destptr);
     return 0;

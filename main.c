@@ -4,12 +4,13 @@
 
 
 int main() {
-    initialize();
-    memory[0x22] = 0x45;
-    execute( INS_MOV_IM_X );
-    memory[0x24] = 0x70;
-    execute( INS_MOV_X_M );
+    initialize( "main.out" );
+    while ( 1 ) {
+        // printf( "%x\n", memory[reg.PC] );
+        execute( memory[reg.PC] );
+        if ( memory[reg.PC] == INS_BRK ) break;
+    }
 
-    printf("$%x\n", memory[0x70]);
+    printf("$%x\n", reg.A);
     return 0;
 }

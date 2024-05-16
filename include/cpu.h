@@ -47,9 +47,18 @@ u8 memory[MEMORYSIZE] = { 0 };
 // $FE      : IRQ Interrupt Vector
 // $FF      : BRK Vector
 
-void initialize() {
+void initialize( const char* ROMFileName ) {
     reg.A = reg.X = reg.Y = 0;
     reg.PC = 0x21;
+
+    FILE* fptr = fopen( ROMFileName, "rb" );
+    u8 byte, bytex = reg.PC;
+    while ((byte = fgetc(fptr)) != (u8)EOF) {
+        memory[bytex] = byte;
+        bytex++;
+    }
+
+    fclose(fptr);
 }
 
 u8* fetch_bytes( u8 length ) {
