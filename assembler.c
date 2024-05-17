@@ -85,12 +85,26 @@ u8 axy( char arg ) {
     }
 }
 
-void mov( insinfo ins ) {
-    u8 opcode = INS_MOV_IM_A, axyv;
-    if      ( ins.args[1].a[0] == '#' && ins.args[2].a[0] == 'r' ) { axyv = axy( ins.args[2].a[1] ); putbyte( opcode+axyv ); putbyte( atoh(ins.args[1].a+1) ); }
-    else if ( ins.args[1].a[0] == '$' ) {
+u8 xy( char arg ) {
+    return ( arg == 'Y' && arg != 'X' );
+}
 
+void mov( insinfo ins ) {
+
+    if ( ins.args[2].a[0] == 'r' ) { // Going into register
+        u8 axyv = axy( ins.args[2].a[1] );
+        u8 xyv  = xy ( ins.args[1].b[1] );
+        if      ( ins.args[1].a[0] == '#' ) { putbyte( INS_MOV_IM_A+axyv ); putbyte( atoh(ins.args[1].a+1) ); }
+        else if ( ins.args[1].a[0] == '$' ) {
+            if      ( ins.args[1].b[0] == 0   ) { putbyte( INS_MOV_M_A +axyv ); putbyte( atoh(ins.args[1].a+1) ); }
+            else if ( ins.args[1].b[0] == 'r' ) { putbyte( INS_MOV_MX_A+xyv  ); putbyte( atoh(ins.args[1].a+1) ); }
+        }
     }
+    else if ( ins.args[2].a[0] == '$' ) { // Going into memory
+        u8 axyv = axy( ins.args[1].a[1] );
+        if ( ins.args[1].a[0] == 'r' ) { putbyte( INS_MOV_A_M+axyv ); putbyte( atoh(ins.args[2].a+1) ); }
+    }
+
     else print_error( "mov", "Incorrect formatting!" );
 }
 
@@ -133,7 +147,7 @@ int main() {
         else if ( str_compare( "mov", ins.args[0].a ) ) mov( ins );
 
     }
-    fputc(EOF, destptr);
+    fputc(EOF, destptr); fputc(EOF, destptr);
     fclose(srcptr);
     fclose(destptr);
     return 0;

@@ -35,7 +35,7 @@ struct {
 } reg;
 
 struct {
-    u8 Z, C;
+    u8 Z, C, N;
 } flag;
 
 
@@ -47,18 +47,45 @@ u8 memory[MEMORYSIZE] = { 0 };
 // $FE      : IRQ Interrupt Vector
 // $FF      : BRK Vector
 
+void print_memory() {
+    printf("MEMORY:\n");
+    for ( u8 i = 0; i < MEMORYSIZE; i++ ) {
+        switch (i) {
+            case 0x0:  printf("\tCALLS:\n"); break;
+            case 0x11: printf("\tSTACK:\n"); break;
+            case 0x21: printf("\tROM:\n");   break;
+            case 0x70: printf("\tRAM:\n");   break;
+        }
+        printf( "\t\t%x: %x\n", i, memory[i] );
+    }
+}
+
 void initialize( const char* ROMFileName ) {
     reg.A = reg.X = reg.Y = 0;
     reg.PC = 0x21;
 
     FILE* fptr = fopen( ROMFileName, "rb" );
-    u8 byte, bytex = reg.PC;
-    while ((byte = fgetc(fptr)) != (u8)EOF) {
+    u8 byte, bytex = reg.PC, end1 = 0;
+    while (1) {
+        byte = fgetc(fptr);
         memory[bytex] = byte;
         bytex++;
+        if ( byte == (u8)EOF ) { // Only stop if we find a double (u8)EOF
+            if ( end1 ) break;
+            else end1 = 1;
+        } else end1 = 0;
     }
+    memory[bytex-1] = 0; // Remove EOFs
+    memory[bytex-2] = 0;
 
     fclose(fptr);
+}
+
+void print_registers() {
+    printf(
+        "REGISTERS:\n\tA: %x\n\tX: %x\n\tY: %x\n",
+        reg.A, reg.X, reg.Y
+    );
 }
 
 u8* fetch_bytes( u8 length ) {
@@ -68,6 +95,7 @@ u8* fetch_bytes( u8 length ) {
 
 void execute(u8 ins) {
     reg.PC++;
+    printf("\tINS: %x\n", ins);
     switch(ins) {
         case INS_MOV_IM_A: {
             reg.A = *fetch_bytes(1);
@@ -88,13 +116,13 @@ void execute(u8 ins) {
             reg.Y = memory[*fetch_bytes(1)];
         } break;
         case INS_MOV_MX_A: {
-            reg.A = memory[*fetch_bytes(1)+reg.X];
+            reg.A = memory[(u8)(*fetch_bytes(1)+reg.X)];
         } break;
         case INS_MOV_MY_A: {
-            reg.A = memory[ memory[*fetch_bytes(1)]+reg.Y ];
+            reg.A = memory[ (u8)(memory[*fetch_bytes(1)]+reg.Y) ];
         } break;
         case INS_MOV_MXY_A: {
-            reg.A = memory[ memory[*fetch_bytes(1)+reg.X]+reg.Y ];
+            reg.A = memory[ (u8)(memory[(u8)(*fetch_bytes(1)+reg.X)]+reg.Y) ];
         } break;
         case INS_MOV_A_M: {
             memory[*fetch_bytes(1)] = reg.A;
@@ -106,13 +134,13 @@ void execute(u8 ins) {
             memory[*fetch_bytes(1)] = reg.Y;
         } break;
         case INS_MOV_A_MX: {
-            memory[*fetch_bytes(1)+reg.X] = reg.A;
+            memory[(u8)(*fetch_bytes(1)+reg.X)] = reg.A;
         } break;
         case INS_MOV_A_MY: {
-            memory[ memory[*fetch_bytes(1)]+reg.Y ] = reg.A;
+            memory[ (u8)(memory[*fetch_bytes(1)]+reg.Y) ] = reg.A;
         } break;
         case INS_MOV_A_MXY: {
-            memory[ memory[*fetch_bytes(1)+reg.X]+reg.Y ] = reg.A;
+            memory[ (u8)(memory[(u8)(*fetch_bytes(1)+reg.X)]+reg.Y) ] = reg.A;
         } break;
             
     }
